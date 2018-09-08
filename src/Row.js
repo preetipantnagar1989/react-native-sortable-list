@@ -1,8 +1,7 @@
 import React, {Component, cloneElement} from 'react';
-import PropTypes from 'prop-types';
 import {Animated, PanResponder, StyleSheet} from 'react-native';
 import {shallowEqual} from './utils';
-
+import PropTypes from 'prop-types';
 export default class Row extends Component {
   static propTypes = {
     children: PropTypes.node,
@@ -33,33 +32,24 @@ export default class Row extends Component {
     location: {x: 0, y: 0},
     activationTime: 200,
   };
-
-  constructor(props) {
-    super(props);
-
-    this._animatedLocation = new Animated.ValueXY(props.location);
-    this._location = props.location;
-
-    this._animatedLocation.addListener(this._onChangeLocation);
-  }
-
+  _animatedLocation: Animated.ValueXY;
+  _location: Object;
+  _active: boolean;
+  _target: string;
+  _prevGestureState: { moveX: number; moveY: number; stateID: number; x0: number; y0: number; dx: number; dy: number; vx: number; vy: number; numberActiveTouches: number; _accountsForMovesUpTo: number; };
+  _longPressTimer: number;
+  _isAnimationRunning: boolean;
+  _layout: boolean;
   _panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => !this._isDisabled(),
 
     onMoveShouldSetPanResponder: (e, gestureState) => {
       if (this._isDisabled()) return false;
 
-      const vy = Math.abs(gestureState.vy)
-      const vx = Math.abs(gestureState.vx)
+      const vy = Math.abs(gestureState.vy);
+      const vx = Math.abs(gestureState.vx);
 
       return this._active && (this.props.horizontal ? vx > vy : vy > vx);
-    },
-
-    onShouldBlockNativeResponder: () => {
-      // Returns whether this component should block native components from becoming the JS
-      // responder. Returns true by default. Is currently only supported on android.
-      // NOTE: Returning false here allows us to scroll unless it's a long press on a row.
-      return false;
     },
 
     onPanResponderGrant: (e, gestureState) => {
@@ -141,7 +131,17 @@ export default class Row extends Component {
       }
     },
   });
+  constructor(props) {
+    super(props);
 
+    this._animatedLocation = new Animated.ValueXY(props.location);
+    this._location = props.location;
+
+    this._animatedLocation.addListener(this._onChangeLocation);
+  }
+  _nextLocation(arg0: Object, arg1: Object, arg2: Object): Object {
+    throw new Error('Method not implemented.');
+  }
   componentWillReceiveProps(nextProps) {
     if (!this._active && !shallowEqual(this._location, nextProps.location)) {
       const animated = !this._active && nextProps.animated;
@@ -213,7 +213,7 @@ export default class Row extends Component {
     if (callback) {
       callback(e, gestureState, this._location);
     }
-  };
+  }
 
   _mapGestureToMove(prevGestureState, gestureState) {
     return this.props.horizontal
@@ -236,15 +236,14 @@ export default class Row extends Component {
 
   _onChangeLocation = (value) => {
     this._location = value;
-  };
+  }
 
   _onLayout = (e) => {
       this._layout = e.nativeEvent.layout;
-
       if (this.props.onLayout) {
           this.props.onLayout(e);
       }
-  };
+  }
 }
 
 const styles = StyleSheet.create({
